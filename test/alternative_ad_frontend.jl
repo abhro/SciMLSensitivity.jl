@@ -300,7 +300,7 @@ prob3 = ODEProblem{false}(ff, u0, (t_start, t_stop), p)
 
 function loss2(p)
     solution = solve(
-        prob3; p = p, alg = solver, saveat = tData,
+        prob3; p, alg = solver, saveat = tData,
         sensealg = sensealg, abstol = 1.0e-10, reltol = 1.0e-10
     )
     # fix for ReverseDiff

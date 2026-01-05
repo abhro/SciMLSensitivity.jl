@@ -20,16 +20,16 @@ proboop = ODEProblem(foop, u0, (0.0, 10.0), p)
 sol = solve(prob, Tsit5(), abstol = 1.0e-14, reltol = 1.0e-14)
 @test sol isa ODESolution
 sumsol = sum(sol)
-@test sum(solve(prob, Tsit5(), u0 = u0, p = p, abstol = 1.0e-14, reltol = 1.0e-14)) == sumsol
+@test sum(solve(prob, Tsit5(); u0, p, abstol = 1.0e-14, reltol = 1.0e-14)) == sumsol
 @test sum(
     solve(
-        prob, Tsit5(), u0 = u0, p = p, abstol = 1.0e-14, reltol = 1.0e-14,
+        prob, Tsit5(); u0, p, abstol = 1.0e-14, reltol = 1.0e-14,
         sensealg = ForwardDiffSensitivity()
     )
 ) == sumsol
 @test sum(
     solve(
-        prob, Tsit5(), u0 = u0, p = p, abstol = 1.0e-14, reltol = 1.0e-14,
+        prob, Tsit5(); u0, p, abstol = 1.0e-14, reltol = 1.0e-14,
         sensealg = BacksolveAdjoint()
     )
 ) == sumsol
@@ -39,70 +39,62 @@ sumsol = sum(sol)
 ###
 
 _sol = solve(prob, Tsit5(), abstol = 1.0e-14, reltol = 1.0e-14)
-ū0,
-    adj = adjoint_sensitivities(
+ū0, adj = adjoint_sensitivities(
     _sol, Tsit5(), t = 0.0:0.1:10,
     dgdu_discrete = ((out, u, p, t, i) -> out .= 1),
     abstol = 1.0e-14, reltol = 1.0e-14
 )
-du01,
-    dp1 = Zygote.gradient(
+du01, dp1 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = QuadratureAdjoint()
         )
     ),
     u0,
     p
 )
-du02,
-    dp2 = Zygote.gradient(
+du02, dp2 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = InterpolatingAdjoint()
         )
     ),
     u0,
     p
 )
-du03,
-    dp3 = Zygote.gradient(
+du03, dp3 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = BacksolveAdjoint()
         )
     ),
     u0,
     p
 )
-du04,
-    dp4 = Zygote.gradient(
+du04, dp4 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1, sensealg = TrackerAdjoint()
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
+            sensealg = TrackerAdjoint()
         )
     ),
     u0, p
@@ -113,53 +105,48 @@ du04,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1, sensealg = ZygoteAdjoint()
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
+            sensealg = ZygoteAdjoint()
         )
     ),
     u0, p
 ) isa Tuple
-du06,
-    dp6 = Zygote.gradient(
+du06, dp6 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ReverseDiffAdjoint()
         )
     ),
     u0,
     p
 )
-@test_broken du07,
-    dp7 = Zygote.gradient(
+@test_broken du07, dp7 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = MooncakeAdjoint()
         )
     ),
     u0,
     p
 )
-du08,
-    dp8 = Zygote.gradient(
+du08, dp8 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1,
             sensealg = EnzymeAdjoint()
@@ -190,11 +177,10 @@ du08,
 ### Direct from prob
 ###
 
-du01,
-    dp1 = Zygote.gradient(u0, p) do u0, p
+du01, dp1 = Zygote.gradient(u0, p) do u0, p
     sum(
         solve(
-            remake(prob, u0 = u0, p = p), Tsit5(), abstol = 1.0e-14, reltol = 1.0e-14,
+            remake(prob; u0, p), Tsit5(), abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, sensealg = QuadratureAdjoint()
         )
     )
@@ -207,62 +193,55 @@ end
 ### forward
 ###
 
-du06,
-    dp6 = Zygote.gradient(
+du06, dp6 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ForwardSensitivity()
         )
     ),
     u0,
     p
 )
-du07,
-    dp7 = Zygote.gradient(
+du07, dp7 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ForwardDiffSensitivity()
         )
     ),
     u0,
     p
 )
-@test_broken du08,
-    dp8 = Zygote.gradient(
+@test_broken du08, dp8 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14,
-            reltol = 1.0e-14, saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             save_idxs = 1:1,
             sensealg = ForwardSensitivity()
         )
     ),
     u0, p
 )
-du09,
-    dp9 = Zygote.gradient(
+du09, dp9 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = ForwardDiffSensitivity()
@@ -277,34 +256,28 @@ du09,
 @test adj ≈ dp6' rtol = 1.0e-12
 @test adj ≈ dp7' rtol = 1.0e-12
 
-ū02,
-    adj2 = Zygote.gradient(
+ū02, adj2 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         Array(
             solve(
-                prob, Tsit5(), u0 = u0, p = p,
-                abstol = 1.0e-14, reltol = 1.0e-14,
-                saveat = 0.1,
+                prob, Tsit5(); u0, p,
+                abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
                 sensealg = InterpolatingAdjoint()
             )
-        )[
-            1,
-            :,
-        ]
+        )[1, :]
     ),
     u0, p
 )
-du05,
-    dp5 = Zygote.gradient(
+du05, dp5 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = InterpolatingAdjoint()
@@ -313,14 +286,13 @@ du05,
     u0,
     p
 )
-du06,
-    dp6 = Zygote.gradient(
+du06, dp6 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.0:0.1:10.0, save_idxs = 1:1,
             sensealg = QuadratureAdjoint()
@@ -329,14 +301,13 @@ du06,
     u0,
     p
 )
-du07,
-    dp7 = Zygote.gradient(
+du07, dp7 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1,
             sensealg = InterpolatingAdjoint()
@@ -345,14 +316,13 @@ du07,
     u0,
     p
 )
-du08,
-    dp8 = Zygote.gradient(
+du08, dp8 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = InterpolatingAdjoint()
@@ -361,14 +331,13 @@ du08,
     u0,
     p
 )
-du09,
-    dp9 = Zygote.gradient(
+du09, dp9 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1,
             sensealg = ReverseDiffAdjoint()
@@ -377,14 +346,13 @@ du09,
     u0,
     p
 )
-du010,
-    dp10 = Zygote.gradient(
+du010, dp10 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = TrackerAdjoint()
@@ -393,31 +361,27 @@ du010,
     u0,
     p
 )
-@test_broken du011,
-    dp11 = Zygote.gradient(
+@test_broken du011, dp11 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0,
-            p = p, abstol = 1.0e-14,
-            reltol = 1.0e-14,
-            saveat = 0.1,
+            prob, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             save_idxs = 1:1,
             sensealg = ForwardSensitivity()
         )
     ),
     u0, p
 )
-du012,
-    dp12 = Zygote.gradient(
+du012, dp12 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = ForwardDiffSensitivity()
@@ -425,14 +389,13 @@ du012,
     ),
     u0, p
 )
-du013,
-    dp13 = Zygote.gradient(
+du013, dp13 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = GaussAdjoint()
@@ -440,14 +403,13 @@ du013,
     ),
     u0, p
 )
-du014,
-    dp14 = Zygote.gradient(
+du014, dp14 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = GaussKronrodAdjoint()
@@ -480,14 +442,13 @@ du014,
 ### Only End
 ###
 
-ū0,
-    adj = Zygote.gradient(
+ū0, adj = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             save_everystep = false, save_start = false,
             sensealg = InterpolatingAdjoint()
@@ -496,14 +457,13 @@ ū0,
     u0,
     p
 )
-du03,
-    dp3 = Zygote.gradient(
+du03, dp3 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             save_everystep = false, save_start = false,
             sensealg = ReverseDiffAdjoint()
@@ -512,14 +472,13 @@ du03,
     u0,
     p
 )
-du04,
-    dp4 = Zygote.gradient(
+du04, dp4 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            prob, Tsit5(), u0 = u0, p = p,
+            prob, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             save_everystep = false, save_start = false,
             sensealg = InterpolatingAdjoint()
@@ -537,8 +496,7 @@ du04,
 ###
 
 _sol = solve(prob, Tsit5(), abstol = 1.0e-14, reltol = 1.0e-14)
-ū0,
-    adj = adjoint_sensitivities(
+ū0, adj = adjoint_sensitivities(
     _sol, Tsit5(), t = 0.0:0.1:10,
     dgdu_discrete = ((out, u, p, t, i) -> out .= 1),
     abstol = 1.0e-14, reltol = 1.0e-14
@@ -548,157 +506,138 @@ ū0,
 ### adjoint
 ###
 
-du01,
-    dp1 = Zygote.gradient(
+du01, dp1 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = QuadratureAdjoint()
         )
     ),
     u0,
     p
 )
-du02,
-    dp2 = Zygote.gradient(
+du02, dp2 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = InterpolatingAdjoint()
         )
     ),
     u0,
     p
 )
-du03,
-    dp3 = Zygote.gradient(
+du03, dp3 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = BacksolveAdjoint()
         )
     ),
     u0,
     p
 )
-du04,
-    dp4 = Zygote.gradient(
+du04, dp4 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
             proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1, sensealg = TrackerAdjoint()
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
+            sensealg = TrackerAdjoint()
         )
     ),
     u0, p
 )
-@test_broken du05,
-    dp5 = Zygote.gradient(
+@test_broken du05, dp5 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0,
-            p = p, abstol = 1.0e-14,
-            reltol = 1.0e-14, saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ZygoteAdjoint()
         )
     ),
     u0, p
 ) isa Tuple
-du06,
-    dp6 = Zygote.gradient(
+du06, dp6 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ReverseDiffAdjoint()
         )
     ),
     u0,
     p
 )
-@test_broken du07,
-    dp7 = Zygote.gradient(
+@test_broken du07, dp7 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = MooncakeAdjoint()
         )
     ),
     u0,
     p
 )
-du08,
-    dp8 = Zygote.gradient(
+du08, dp8 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = EnzymeAdjoint()
         )
     ),
     u0,
     p
 )
-du09,
-    dp9 = Zygote.gradient(
+du09, dp9 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = GaussAdjoint()
         )
     ),
     u0,
     p
 )
-du010,
-    dp10 = Zygote.gradient(
+du010, dp10 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = GaussKronrodAdjoint()
         )
     ),
@@ -737,25 +676,22 @@ du010,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ForwardSensitivity()
         )
     ),
     u0,
     p
 ) isa Tuple
-du07,
-    dp7 = Zygote.gradient(
+du07, dp7 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 0.1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
             sensealg = ForwardDiffSensitivity()
         )
     ),
@@ -768,34 +704,28 @@ du07,
 #@test adj ≈ dp6' rtol=1e-12
 @test adj ≈ dp7' rtol = 1.0e-12
 
-ū02,
-    adj2 = Zygote.gradient(
+ū02, adj2 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         Array(
             solve(
-                proboop, Tsit5(), u0 = u0, p = p,
-                abstol = 1.0e-14, reltol = 1.0e-14,
-                saveat = 0.1,
+                proboop, Tsit5(); u0, p,
+                abstol = 1.0e-14, reltol = 1.0e-14, saveat = 0.1,
                 sensealg = InterpolatingAdjoint()
             )
-        )[
-            1,
-            :,
-        ]
+        )[1, :]
     ),
     u0, p
 )
-du05,
-    dp5 = Zygote.gradient(
+du05, dp5 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = InterpolatingAdjoint()
@@ -804,14 +734,13 @@ du05,
     u0,
     p
 )
-du06,
-    dp6 = Zygote.gradient(
+du06, dp6 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.0:0.1:10.0, save_idxs = 1:1,
             sensealg = QuadratureAdjoint()
@@ -820,14 +749,13 @@ du06,
     u0,
     p
 )
-du07,
-    dp7 = Zygote.gradient(
+du07, dp7 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1,
             sensealg = InterpolatingAdjoint()
@@ -836,14 +764,13 @@ du07,
     u0,
     p
 )
-du08,
-    dp8 = Zygote.gradient(
+du08, dp8 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = InterpolatingAdjoint()
@@ -852,14 +779,13 @@ du08,
     u0,
     p
 )
-du09,
-    dp9 = Zygote.gradient(
+du09, dp9 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1,
             sensealg = ReverseDiffAdjoint()
@@ -868,14 +794,13 @@ du09,
     u0,
     p
 )
-du010,
-    dp10 = Zygote.gradient(
+du010, dp10 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = TrackerAdjoint()
@@ -884,31 +809,27 @@ du010,
     u0,
     p
 )
-@test_broken du011,
-    dp11 = Zygote.gradient(
+@test_broken du011, dp11 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0,
-            p = p, abstol = 1.0e-14,
-            reltol = 1.0e-14,
-            saveat = 0.1,
-            save_idxs = 1:1,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14,
+            saveat = 0.1, save_idxs = 1:1,
             sensealg = ForwardSensitivity()
         )
     ),
     u0, p
 )
-du012,
-    dp12 = Zygote.gradient(
+du012, dp12 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = ForwardDiffSensitivity()
@@ -917,14 +838,13 @@ du012,
     u0, p
 )
 # Redundant to test aliasing
-du013,
-    dp13 = Zygote.gradient(
+du013, dp13 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             saveat = 0.1, save_idxs = 1:1,
             sensealg = InterpolatingAdjoint()
@@ -933,14 +853,13 @@ du013,
     u0,
     p
 )
-du014,
-    dp14 = Zygote.gradient(
+du014, dp14 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             save_idxs = 1, saveat = 0.1,
             sensealg = InterpolatingAdjoint()
@@ -949,14 +868,13 @@ du014,
     u0,
     p
 )
-du015,
-    dp15 = Zygote.gradient(
+du015, dp15 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             save_idxs = 1, saveat = 0.1,
             sensealg = GaussAdjoint()
@@ -965,14 +883,13 @@ du015,
     u0,
     p
 )
-du016,
-    dp16 = Zygote.gradient(
+du016, dp16 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14,
             save_idxs = 1, saveat = 0.1,
             sensealg = GaussKronrodAdjoint()
@@ -1012,7 +929,7 @@ dp1 = Zygote.gradient(
     (p) -> sum(
         last(
             solve(
-                prob, Tsit5(), p = p, saveat = 10.0,
+                prob, Tsit5(); p, saveat = 10.0,
                 abstol = 1.0e-14, reltol = 1.0e-14
             )
         )
@@ -1023,7 +940,7 @@ dp2 = ForwardDiff.gradient(
     (p) -> sum(
         last(
             solve(
-                prob, Tsit5(), p = p, saveat = 10.0,
+                prob, Tsit5(); p, saveat = 10.0,
                 abstol = 1.0e-14, reltol = 1.0e-14
             )
         )
@@ -1036,7 +953,7 @@ dp1 = Zygote.gradient(
     (p) -> sum(
         last(
             solve(
-                proboop, Tsit5(), u0 = u0, p = p, saveat = 10.0,
+                proboop, Tsit5(); u0, p, saveat = 10.0,
                 abstol = 1.0e-14, reltol = 1.0e-14
             )
         )
@@ -1047,9 +964,8 @@ dp2 = ForwardDiff.gradient(
     (p) -> sum(
         last(
             solve(
-                proboop, Tsit5(), u0 = u0, p = p,
-                saveat = 10.0, abstol = 1.0e-14,
-                reltol = 1.0e-14
+                proboop, Tsit5(); u0, p, saveat = 10.0,
+                abstol = 1.0e-14, reltol = 1.0e-14
             )
         )
     ),
@@ -1058,14 +974,13 @@ dp2 = ForwardDiff.gradient(
 @test dp1 ≈ dp2
 
 # tspan[2]-tspan[1] not a multiple of saveat tests
-du0,
-    dp = Zygote.gradient(
+du0, dp = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
+            proboop, Tsit5(); u0, p,
             abstol = 1.0e-14, reltol = 1.0e-14, saveat = 2.3,
             sensealg = ReverseDiffAdjoint()
         )
@@ -1073,64 +988,56 @@ du0,
     u0,
     p
 )
-du01,
-    dp1 = Zygote.gradient(
+du01, dp1 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 2.3,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 2.3,
             sensealg = QuadratureAdjoint()
         )
     ),
     u0,
     p
 )
-du02,
-    dp2 = Zygote.gradient(
+du02, dp2 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 2.3,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 2.3,
             sensealg = InterpolatingAdjoint()
         )
     ),
     u0,
     p
 )
-du03,
-    dp3 = Zygote.gradient(
+du03, dp3 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), u0 = u0, p = p,
-            abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 2.3,
+            proboop, Tsit5(); u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 2.3,
             sensealg = BacksolveAdjoint()
         )
     ),
     u0,
     p
 )
-du04,
-    dp4 = Zygote.gradient(
+du04, dp4 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, Tsit5(), save_end = true, u0 = u0,
-            p = p, abstol = 1.0e-14, reltol = 1.0e-14,
-            saveat = 2.3,
+            proboop, Tsit5(); save_end = true, u0, p,
+            abstol = 1.0e-14, reltol = 1.0e-14, saveat = 2.3,
             sensealg = ForwardDiffSensitivity()
         )
     ),
@@ -1184,44 +1091,40 @@ proboop = SDEProblem(foop, σoop, u0, (0.0, 1.0), p)
 ###
 
 _sol = solve(
-    proboop, EulerHeun(), dt = 1.0e-2, adaptive = false, save_noise = true,
-    seed = seed
+    proboop, EulerHeun(); dt = 1.0e-2, adaptive = false, save_noise = true, seed
 )
-ū0,
-    adj = adjoint_sensitivities(
+ū0, adj = adjoint_sensitivities(
     _sol, EulerHeun(), t = tarray,
     dgdu_discrete = ((out, u, p, t, i) -> out .= 1),
     sensealg = BacksolveAdjoint()
 )
 
-du01,
-    dp1 = Zygote.gradient(
+du01, dp1 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, EulerHeun(),
-            u0 = u0, p = p, dt = 1.0e-2, saveat = 0.01,
+            proboop, EulerHeun();
+            u0, p, dt = 1.0e-2, saveat = 0.01,
             sensealg = BacksolveAdjoint(),
-            seed = seed
+            seed
         )
     ),
     u0,
     p
 )
 
-du02,
-    dp2 = Zygote.gradient(
+du02, dp2 = Zygote.gradient(
     (
         u0,
         p,
     ) -> sum(
         solve(
-            proboop, EulerHeun(), u0 = u0, p = p,
+            proboop, EulerHeun(); u0, p,
             dt = 1.0e-2, saveat = 0.01,
             sensealg = ForwardDiffSensitivity(),
-            seed = seed
+            seed
         )
     ),
     u0,

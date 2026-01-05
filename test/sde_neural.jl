@@ -143,7 +143,7 @@ Random.seed!(238248735)
 
     optf = Optimization.OptimizationFunction((x, p) -> loss(x), Optimization.AutoZygote())
     optprob = Optimization.OptimizationProblem(optf, α)
-    res1 = Optimization.solve(optprob, Adam(0.001), callback = callback, maxiters = 200)
+    res1 = Optimization.solve(optprob, Adam(0.001); callback, maxiters = 200)
 
     println("Test non-mutating form")
 
@@ -152,7 +152,7 @@ Random.seed!(238248735)
         Optimization.AutoZygote()
     )
     optprob = Optimization.OptimizationProblem(optf, α)
-    res2 = Optimization.solve(optprob, Adam(0.001), callback = callback, maxiters = 200)
+    res2 = Optimization.solve(optprob, Adam(0.001); callback, maxiters = 200)
 end
 
 @testset "Adaptive neural SDE" begin
@@ -199,7 +199,7 @@ end
             remake(prob, p = pars, u0 = u0tmp)
         end
 
-        ensembleprob = EnsembleProblem(prob, prob_func = prob_func)
+        ensembleprob = EnsembleProblem(prob; prob_func)
 
         _sol = solve(
             ensembleprob, alg, EnsembleThreads(),
@@ -227,19 +227,19 @@ end
         Optimization.AutoZygote()
     )
     optprob = Optimization.OptimizationProblem(optf, ps)
-    res1 = Optimization.solve(optprob, Adam(0.1), callback = callback, maxiters = 5)
+    res1 = Optimization.solve(optprob, Adam(0.1); callback, maxiters = 5)
 
     optf = Optimization.OptimizationFunction(
         (p, _) -> loss(p, probscalar, SOSRI()),
         Optimization.AutoZygote()
     )
     optprob = Optimization.OptimizationProblem(optf, ps)
-    res2 = Optimization.solve(optprob, Adam(0.1), callback = callback, maxiters = 5)
+    res2 = Optimization.solve(optprob, Adam(0.1); callback, maxiters = 5)
 
     optf = Optimization.OptimizationFunction(
         (p, _) -> loss(p, prob, LambaEM()),
         Optimization.AutoZygote()
     )
     optprob = Optimization.OptimizationProblem(optf, ps)
-    res1 = Optimization.solve(optprob, Adam(0.1), callback = callback, maxiters = 5)
+    res1 = Optimization.solve(optprob, Adam(0.1); callback, maxiters = 5)
 end
